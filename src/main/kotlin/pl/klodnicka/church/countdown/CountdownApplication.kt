@@ -1,14 +1,16 @@
 package pl.klodnicka.church.countdown
 
+import tornadofx.*
+
 import javafx.application.Application
-import javafx.application.Platform
-import javafx.scene.Scene
-import javafx.scene.control.Label
-import javafx.scene.layout.StackPane
-import javafx.stage.Stage
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.context.ConfigurableApplicationContext
+import tornadofx.App
+import tornadofx.DIContainer
+import tornadofx.FX
+import tornadofx.View
+import kotlin.reflect.KClass
 
 @SpringBootApplication
 class CountdownApplication {
@@ -22,22 +24,27 @@ class CountdownApplication {
     }
 }
 
-class FxCountdownApplication : Application() {
-    private lateinit var applicationContext: ConfigurableApplicationContext
+class FxCountdownApplication : App(MainView::class) {
+    private lateinit var context: ConfigurableApplicationContext
 
     override fun init() {
-        applicationContext = SpringApplicationBuilder(CountdownApplication::class.java).run()
-    }
+        context = SpringApplicationBuilder(CountdownApplication::class.java).run()
 
-    override fun start(stage: Stage) {
-        val l = Label("Hello, JavaFX!")
-        val scene = Scene(StackPane(l), 640.0, 480.0)
-        stage.scene = scene
-        stage.show()
+        FX.dicontainer = object : DIContainer {
+            override fun <T : Any> getInstance(type: KClass<T>): T = context.getBean(type.java)
+            override fun <T : Any> getInstance(type: KClass<T>, name: String): T = context.getBean(name, type.java)
+        }
     }
 
     override fun stop() {
-        applicationContext.close()
-        Platform.exit()
+        super.stop()
+        context.close()
+    }
+}
+
+class MainView : View("MainView") {
+
+    override val root = vbox {
+        label { text = "Hello, JavaFX!" }
     }
 }
