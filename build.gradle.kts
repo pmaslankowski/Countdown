@@ -27,10 +27,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx")
     implementation("no.tornado:tornadofx:1.7.20")
+    implementation("com.google.guava:guava:31.0.1-jre")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.assertj:assertj-core:3.6.1")
+    testImplementation("io.mockk:mockk:1.9.3")
 
     // TODO: move to integration
     testImplementation("org.testfx:testfx-junit5:4.0.16-alpha")
@@ -44,7 +48,7 @@ javafx {
 
 sourceSets {
     create("integration") {
-        compileClasspath += sourceSets.main.get().output + configurations.testRuntimeClasspath
+        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output + configurations.testRuntimeClasspath
         runtimeClasspath += sourceSets.main.get().output + compileClasspath
     }
 }
