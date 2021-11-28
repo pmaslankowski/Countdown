@@ -85,4 +85,8 @@ class IntegrationTestConfiguration {
     @Bean
     @Primary
     fun fixedClock(): Clock = FixedClock()
+
+    @Bean
+    @Primary
+    fun countdownRobot(): CountdownRobot = CountdownRobot(FxRobot())
 }
