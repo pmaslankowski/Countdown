@@ -2,7 +2,6 @@ package pl.klodnicka.church.countdown.adapters.presentation
 
 import pl.klodnicka.church.countdown.adapters.presentation.countdownsetup.CountdownSetupViewModel
 import pl.klodnicka.church.countdown.adapters.presentation.countdownsetup.CountdownSetupViewModelFactory
-import tornadofx.ValidationContext
 import tornadofx.View
 import tornadofx.action
 import tornadofx.button
@@ -23,8 +22,7 @@ class CountdownSetupView : View("Parametry odliczania") {
         fieldset("Parametry odliczania") {
             field("Długość") {
                 textfield(viewModel.durationProperty) {
-                    val ctx = ValidationContext()
-                    ctx.addValidator(this, viewModel.durationProperty) {
+                    validate(viewModel.durationProperty) {
                         if (!viewModel.validateDuration()) error("Wprowadź długość w formacie mm:ss") else null
                     }
                 }
