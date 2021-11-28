@@ -20,13 +20,13 @@ class CountdownRobot(
 
     fun startCountdown() {
         fxRobot.interact { countdownSetupWindow().requestFocus() }
-        assertStartButtonStateIs(disabled = false)
+        assertStartButtonStateIs(enabled = true)
         fxRobot.clickOn(START_BUTTON_LABEL)
     }
 
     fun stopCountdown() {
         fxRobot.interact { countdownSetupWindow().requestFocus() }
-        assertStopButtonStateIs(disabled = false)
+        assertStopButtonStateIs(enabled = true)
         fxRobot.clickOn(STOP_BUTTON_LABEL)
     }
 
@@ -52,21 +52,21 @@ class CountdownRobot(
         }
     }
 
-    fun assertStartButtonStateIs(disabled: Boolean) {
+    fun assertStartButtonStateIs(enabled: Boolean) {
         waitFor(
-            messageOnFail = "Start button is ${toState(!disabled)} but was expected to be ${toState(disabled)}",
+            messageOnFail = "Start button is ${toState(!enabled)} but was expected to be ${toState(enabled)}",
             timeoutMs = 1000
         ) {
-            fxRobot.lookup(START_BUTTON_LABEL).query<Button>().isDisabled == disabled
+            fxRobot.lookup(START_BUTTON_LABEL).query<Button>().isDisabled == !enabled
         }
     }
 
-    fun assertStopButtonStateIs(disabled: Boolean) {
+    fun assertStopButtonStateIs(enabled: Boolean) {
         waitFor(
-            messageOnFail = "Stop button is ${toState(!disabled)} but was expected to be ${toState(disabled)}",
+            messageOnFail = "Stop button is ${toState(!enabled)} but was expected to be ${toState(enabled)}",
             timeoutMs = 1000
         ) {
-            fxRobot.lookup(STOP_BUTTON_LABEL).query<Button>().isDisabled == disabled
+            fxRobot.lookup(STOP_BUTTON_LABEL).query<Button>().isDisabled == !enabled
         }
     }
 
@@ -92,11 +92,11 @@ class CountdownRobot(
         fxRobot.interact { (window as Stage).close() }
     }
 
-    private fun toState(disabled: Boolean) =
-        if (disabled) {
-            "disabled"
-        } else {
+    private fun toState(enabled: Boolean) =
+        if (enabled) {
             "enabled"
+        } else {
+            "disabled"
         }
 
     companion object {

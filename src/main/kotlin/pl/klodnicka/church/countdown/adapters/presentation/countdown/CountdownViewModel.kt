@@ -24,8 +24,8 @@ class CountdownViewModel(
     private var closeWindowCallback: () -> Unit = {}
 
     init {
-        eventBus.subscribe<StopCountdownCommand> { onStopCountdownCommand() }
-        eventBus.subscribe<ApplicationClosedEvent> { onApplicationClosed() }
+        eventBus.subscribe(StopCountdownCommand::class) { onStopCountdownCommand() }
+        eventBus.subscribe(ApplicationClosedEvent::class) { onApplicationClosed() }
     }
 
     fun startCountdown(duration: Duration, closeWindowCallback: () -> Unit) {

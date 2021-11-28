@@ -2,17 +2,18 @@ package pl.klodnicka.church.countdown.adapters.presentation
 
 import pl.klodnicka.church.countdown.adapters.presentation.countdownsetup.CountdownSetupViewModel
 import pl.klodnicka.church.countdown.adapters.presentation.countdownsetup.CountdownSetupViewModelFactory
+import tornadofx.ValidationContext
 import tornadofx.View
 import tornadofx.action
 import tornadofx.button
 import tornadofx.buttonbar
 import tornadofx.combobox
+import tornadofx.enableWhen
 import tornadofx.field
 import tornadofx.fieldset
 import tornadofx.form
 import tornadofx.textfield
 
-// TODO: duration validation
 class CountdownSetupView : View("Parametry odliczania") {
 
     private val viewModelFactory: CountdownSetupViewModelFactory by di()
@@ -21,7 +22,12 @@ class CountdownSetupView : View("Parametry odliczania") {
     override val root = form {
         fieldset("Parametry odliczania") {
             field("Długość") {
-                textfield(viewModel.durationProperty)
+                textfield(viewModel.durationProperty) {
+                    val ctx = ValidationContext()
+                    ctx.addValidator(this, viewModel.durationProperty) {
+                        if (!viewModel.validateDuration()) error("Wprowadź długość w formacie mm:ss") else null
+                    }
+                }
             }
             field("Ekran") {
                 combobox(viewModel.selectedDisplayProperty, values = viewModel.availableDisplaysProperty)
@@ -31,13 +37,13 @@ class CountdownSetupView : View("Parametry odliczania") {
                     action {
                         viewModel.stopCountdown()
                     }
-                    disableProperty().bind(viewModel.stopButtonDisabledProperty)
+                    enableWhen { viewModel.stopButtonEnabledProperty }
                 }
                 button("Start") {
                     action {
                         viewModel.startCountdown()
                     }
-                    disableProperty().bind(viewModel.startButtonDisabledProperty)
+                    enableWhen { viewModel.startButtonEnabledProperty }
                 }
             }
         }

@@ -14,6 +14,7 @@ import pl.klodnicka.church.countdown.adapters.presentation.DurationParser
 import pl.klodnicka.church.countdown.adapters.presentation.countdown.CountdownFinishedEvent
 import pl.klodnicka.church.countdown.adapters.presentation.countdown.CountdownStartedEvent
 import pl.klodnicka.church.countdown.adapters.presentation.countdown.StopCountdownCommand
+import pl.klodnicka.church.countdown.domain.Display
 import pl.klodnicka.church.countdown.domain.DisplayProvider
 import tornadofx.find
 import tornadofx.getValue
@@ -23,6 +24,7 @@ import java.time.Duration
 class CountdownSetupViewModel(
     private val displayProvider: DisplayProvider,
     private val durationParser: DurationParser,
+    private val countdownRunner: CountdownRunner,
     private val eventBus: EventBus
 ) {
 
@@ -39,16 +41,19 @@ class CountdownSetupViewModel(
     val selectedDisplayProperty = SimpleObjectProperty(displayProvider.getPrimaryDisplay())
     var selectedDisplay by selectedDisplayProperty
 
-    val stopButtonDisabledProperty = SimpleBooleanProperty(true)
-    var stopButtonDisabled by stopButtonDisabledProperty
+    val stopButtonEnabledProperty = SimpleBooleanProperty(false)
+    var stopButtonEnabled by stopButtonEnabledProperty
 
-    val startButtonDisabledProperty = SimpleBooleanProperty(false)
-    var startButtonDisabled by startButtonDisabledProperty
+    val startButtonEnabledProperty = SimpleBooleanProperty(true)
+    var startButtonEnabled by startButtonEnabledProperty
+
+    private var isCountdownRunning: Boolean = false
+    private var isDurationValid = true
 
     init {
-        eventBus.subscribe<CountdownStartedEvent> { onCountdownStarted() }
+        eventBus.subscribe(CountdownStartedEvent::class) { onCountdownStarted() }
         // this delay protects from a native deadlock between the prism renderer and the application thread on macos
-        eventBus.subscribe<CountdownFinishedEvent>(delayMs = 600) { onCountdownFinished() }
+        eventBus.subscribe(CountdownFinishedEvent::class, delayMs = 600) { onCountdownFinished() }
     }
 
     fun refreshDisplays() {
@@ -58,12 +63,7 @@ class CountdownSetupViewModel(
 
     fun startCountdown() {
         val duration: Duration = durationParser.parse(duration)
-        runCountdown(duration)
-    }
-
-    private fun runCountdown(duration: Duration) {
-        val countdownScope = CountdownScope(duration, selectedDisplay)
-        find<CountdownView>(countdownScope).openWindow(owner = null)
+        countdownRunner.startCountdown(duration, selectedDisplay)
     }
 
     fun countdownSetupClosed() {
@@ -74,14 +74,34 @@ class CountdownSetupViewModel(
         eventBus.publish(StopCountdownCommand)
     }
 
-    private fun onCountdownStarted() {
-        startButtonDisabled = true
-        stopButtonDisabled = false
+    fun validateDuration(): Boolean {
+        isDurationValid = durationParser.isValid(duration)
+        refreshButtonsEnabledState()
+        return isDurationValid
     }
 
-    private fun onCountdownFinished() {
-        startButtonDisabled = false
-        stopButtonDisabled = true
+    fun onCountdownStarted() {
+        isCountdownRunning = true
+        refreshButtonsEnabledState()
+    }
+
+    fun onCountdownFinished() {
+        isCountdownRunning = false
+        refreshButtonsEnabledState()
+    }
+
+    private fun refreshButtonsEnabledState() {
+        startButtonEnabled = isDurationValid && !isCountdownRunning
+        stopButtonEnabled = isCountdownRunning
+    }
+}
+
+@Component
+class CountdownRunner {
+
+    fun startCountdown(duration: Duration, selectedDisplay: Display) {
+        val countdownScope = CountdownScope(duration, selectedDisplay)
+        find<CountdownView>(countdownScope).openWindow(owner = null)
     }
 }
 
@@ -89,11 +109,12 @@ class CountdownSetupViewModel(
 class CountdownSetupViewModelFactory(
     private val displayProvider: DisplayProvider,
     private val durationParser: DurationParser,
+    private val countdownRunner: CountdownRunner,
     private val eventBus: EventBus
 ) {
 
     fun createViewModel(): CountdownSetupViewModel =
-        CountdownSetupViewModel(displayProvider, durationParser, eventBus)
+        CountdownSetupViewModel(displayProvider, durationParser, countdownRunner, eventBus)
 }
 
 object ApplicationClosedEvent : Event()

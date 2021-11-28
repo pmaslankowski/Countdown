@@ -32,8 +32,8 @@ class CountdownApplicationIntegrationTest : BaseIntegrationTest() {
         robot.startCountdown()
 
         robot.assertCountdownIsShowing("05:00")
-        robot.assertStartButtonStateIs(disabled = true)
-        robot.assertStopButtonStateIs(disabled = false)
+        robot.assertStartButtonStateIs(enabled = false)
+        robot.assertStopButtonStateIs(enabled = true)
 
         fixedClock.advance(4.min and 30.sec)
         robot.assertCountdownIsShowing("00:30")
@@ -41,8 +41,8 @@ class CountdownApplicationIntegrationTest : BaseIntegrationTest() {
         fixedClock.advance(30.sec)
 
         robot.assertCountdownClosed()
-        robot.assertStartButtonStateIs(disabled = false)
-        robot.assertStopButtonStateIs(disabled = true)
+        robot.assertStartButtonStateIs(enabled = true)
+        robot.assertStopButtonStateIs(enabled = false)
     }
 
     @Test
@@ -93,7 +93,7 @@ class CountdownApplicationIntegrationTest : BaseIntegrationTest() {
         robot.stopCountdown()
 
         robot.assertCountdownClosed(timeoutMs = 1000)
-        robot.assertStartButtonStateIs(disabled = false)
-        robot.assertStopButtonStateIs(disabled = true)
+        robot.assertStartButtonStateIs(enabled = true)
+        robot.assertStopButtonStateIs(enabled = false)
     }
 }
